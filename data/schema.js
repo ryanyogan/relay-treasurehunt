@@ -93,39 +93,76 @@ const gameType = new GraphQLObjectType({
   interfaces: [nodeInterface]
 });
 
-/**
- * This is the type that will be the root of our query,
- * and the entry point into our schema.
- */
-var queryType = new GraphQLObjectType({
+const hidingSpotType = new GraphQLObjectType({
+  name: 'HidingSpot',
+  description: 'A place where you might find a treasure',
+  fields: () => ({
+    id: globalIdField('HidingSpot'),
+    hasBeenChecked: {
+      type: GraphQLBoolean,
+      description: 'True if this spot has already been checked for treasure',
+      resolve: (hidingSpot) => hidingSpot.hasBeenChecked
+    },
+    hasTreasure: {
+      type: GraphQLBoolean,
+      description: 'True if this hiding spot holds treasure',
+      resolve: (hidingSpot) => {
+        if (hidingSpot.hasBeenChecked) {
+          return hidingSpot.hasTreasure;
+        }
+        else {
+          return null;
+        }
+      }
+    }
+  }),
+  interfaces: [nodeInterface]
+});
+
+const { connectionType: hidingSpotConnection } =
+  connectionDefinitions({ name: 'HidingSpot', nodeType: hidingSpotType });
+
+const checkHidingSpotForTreasureMutation = mutationWithClientMutationId({
+  name: 'CheckHidingSpotForTreasure',
+  inputFields: {
+    id: { type: new GraphQLNonNull(GraphQLID)}
+  },
+  ouputFields: {
+    hidingSpot: {
+      type: hidingSpotType,
+      resolve: ({localHidingSpot}) => getHidingSpot(localHidingSpot)
+    },
+    game: {
+      type: gameType,
+      resolve: () => getGame()
+    }
+  },
+  mutateAndGetPayload: ({id}) => {
+    let localHidingSpotId = fromGlobalId(id).id;
+    CheckHidingSpotForTreasure(localHidingSpotId);
+    return { localHidingSpotId };
+  }
+});
+
+const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: () => ({
     node: nodeField,
-    // Add your own root fields here
-    viewer: {
-      type: userType,
-      resolve: () => getViewer(),
-    },
+    game: {
+      type: gameType,
+      resolve: () => getGame()
+    }
   }),
 });
 
-/**
- * This is the type that will be the root of our mutations,
- * and the entry point into performing writes in our schema.
- */
-var mutationType = new GraphQLObjectType({
+const mutationType = new GraphQLObjectType({
   name: 'Mutation',
   fields: () => ({
-    // Add your own mutations here
-  })
+    checkHidingSpotForTreasure: checkHidingSpotForTreasureMutation
+  }),
 });
 
-/**
- * Finally, we construct our schema (whose starting query type is the query
- * type we defined above) and export it.
- */
-export var Schema = new GraphQLSchema({
+export const Schema = new GraphQLSchema({
   query: queryType,
-  // Uncomment the following after adding some mutation fields:
-  // mutation: mutationType
+  mutation: mutationType
 });
