@@ -8,26 +8,43 @@
  */
 
 // Model types
-class User extends Object {}
-class Widget extends Object {}
+export class Game extends Object {}
+export class HidingSpot extends Object {}
 
-// Mock data
-var viewer = new User();
-viewer.id = '1';
-viewer.name = 'Anonymous';
-var widgets = ['What\'s-it', 'Who\'s-it', 'How\'s-it'].map((name, i) => {
-  var widget = new Widget();
-  widget.name = name;
-  widget.id = `${i}`;
-  return widget;
+// Mocked data
+const game = Object.assign(new Game(), {
+  id: 1
 });
 
-module.exports = {
-  // Export methods that your schema can use to interact with your database
-  getUser: (id) => id === viewer.id ? viewer : null,
-  getViewer: () => viewer,
-  getWidget: (id) => widgets.find(w => w.id === id),
-  getWidgets: () => widgets,
-  User,
-  Widget,
+let hidingSpots = [];
+(() => {
+  let hidingSpot;
+  let indexOfSpotWithTreasure = Math.floor(Math.random() * 9);
+  for (let i = 0; i < 9; i++) {
+    hidingSpots.concat(Object.assign(new HidingSpot(), {
+      id: i.toString(),
+      hasTreasure: (i === indexOfSpotWithTreasure),
+      hasBeenChecked: false,
+    }));
+  }
+})();
+
+let turnsRemaining = 3;
+
+export function checkHidingSpotForTreasure(id) {
+  if (hidingSpots.some(hs => hs.hasTreasure && hs.hasBeenChecked)) {
+    return;
+  }
+
+  turnsRemaining--;
+  let hidingSpot = getHidingSpot(id);
+  hidingSpot.hasBeenChecked = true;
 };
+
+export function getHidingSpot(id) {
+  return hidingSpots.find(hs => hs.id === id);
+};
+
+export function getGame() { return game; };
+export function getHidingSpot() { return hidingSpots; };
+export function getTrunsRemaining() { return turnsRemaining };
