@@ -1,8 +1,8 @@
-import { Relay } from 'relay';
+import Relay, { Mutation } from 'react-relay';
 
-export default class CheckHidingSpotForTreasureMutation extends Relay.Mutation {
+export default class CheckHidingSpotForTreasureMutation extends Mutation {
   static fragments = {
-    game: () => Realy.QL`
+    game: () => Relay.QL`
       fragment on Game {
         id,
         turnsRemaining,
@@ -28,11 +28,11 @@ export default class CheckHidingSpotForTreasureMutation extends Relay.Mutation {
       fragment on CheckHidingSpotForTreasurePayload {
         hidingSpot {
           hasBeenChecked,
-          hasTreasure
+          hasTreasure,
         },
-        game: {
-          turnsRemaining
-        }
+        game {
+          turnsRemaining,
+        },
       }
     `;
   }
@@ -42,14 +42,14 @@ export default class CheckHidingSpotForTreasureMutation extends Relay.Mutation {
       type: 'FIELDS_CHANGE',
       fieldIDs: {
         hidingSpot: this.props.hidingSpot.id,
-        game: this.props.game.id
-      }
+        game: this.props.game.id,
+      },
     }];
   }
 
   getVariables() {
     return {
-      id: this.props.hidingSpot.id
+      id: this.props.hidingSpot.id,
     };
   }
 
@@ -60,8 +60,8 @@ export default class CheckHidingSpotForTreasureMutation extends Relay.Mutation {
       },
       hidingSpot: {
         id: this.props.hidingSpot.id,
-        hasBeenChecked: true
-      }
+        hasBeenChecked: true,
+      },
     };
   }
 }

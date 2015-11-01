@@ -21,7 +21,7 @@ let hidingSpots = [];
   let hidingSpot;
   let indexOfSpotWithTreasure = Math.floor(Math.random() * 9);
   for (let i = 0; i < 9; i++) {
-    hidingSpots.concat(Object.assign(new HidingSpot(), {
+    hidingSpots.push(Object.assign(new HidingSpot(), {
       id: i.toString(),
       hasTreasure: (i === indexOfSpotWithTreasure),
       hasBeenChecked: false,
@@ -47,4 +47,4 @@ export function getHidingSpot(id) {
 
 export function getGame() { return game; };
 export function getHidingSpots() { return hidingSpots; };
-export function getTrunsRemaining() { return turnsRemaining };
+export function getTurnsRemaining() { return turnsRemaining; };
