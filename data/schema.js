@@ -31,12 +31,13 @@ import {
 
 import {
   // Import methods that your schema can use to interact with your database
-  User,
-  Widget,
-  getUser,
-  getViewer,
-  getWidget,
-  getWidgets,
+  Game,
+  HidingSpot,
+  checkHidingSpotForTreasure,
+  getGame,
+  getHidingSpot,
+  getHidingSpots,
+  getTurnsRemaining
 } from './database';
 
 /**
@@ -45,65 +46,52 @@ import {
  * The first method defines the way we resolve an ID to its object.
  * The second defines the way we resolve an object to its GraphQL type.
  */
-var {nodeInterface, nodeField} = nodeDefinitions(
+const { nodeInterface, nodeField } = nodeDefinitions(
   (globalId) => {
-    var {type, id} = fromGlobalId(globalId);
-    if (type === 'User') {
-      return getUser(id);
-    } else if (type === 'Widget') {
-      return getWidget(id);
-    } else {
+    const { type, id } = fromGlobalId(globalId);
+
+    if (type === 'Game') {
+      return getGame(id);
+    }
+    else if (type === 'HidingSpot') {
+      return getHidingSpot(id);
+    }
+    else {
       return null;
     }
   },
   (obj) => {
-    if (obj instanceof User) {
-      return userType;
-    } else if (obj instanceof Widget)  {
-      return widgetType;
-    } else {
+    if (obj instanceof Game) {
+      return gameType;
+    }
+    else if (obj instanceof HidingSpot) {
+      return hidingSpotType;
+    }
+    else {
       return null;
     }
   }
-);
+)
 
-/**
- * Define your own types here
- */
-
-var userType = new GraphQLObjectType({
-  name: 'User',
-  description: 'A person who uses our app',
+const gameType = new GraphQLObjectType({
+  name: 'Game',
+  description: 'A treasure search game',
   fields: () => ({
-    id: globalIdField('User'),
-    widgets: {
-      type: widgetConnection,
-      description: 'A person\'s collection of widgets',
+    id: globalIdField('Game'),
+    hidingSpots: {
+      type: hidingSpotConnection,
+      description: 'Places where treasure might be hidden',
       args: connectionArgs,
-      resolve: (_, args) => connectionFromArray(getWidgets(), args),
+      resolve: (game, args) => connectionFromArray(getHidingSpots(), args)
     },
+    turnsRemaining: {
+      type: GraphQLInt,
+      description: 'The number of turns a player has left to find the treasure',
+      resolve: () => getTurnsRemaining()
+    }
   }),
-  interfaces: [nodeInterface],
+  interfaces: [nodeInterface]
 });
-
-var widgetType = new GraphQLObjectType({
-  name: 'Widget',
-  description: 'A shiny widget',
-  fields: () => ({
-    id: globalIdField('Widget'),
-    name: {
-      type: GraphQLString,
-      description: 'The name of the widget',
-    },
-  }),
-  interfaces: [nodeInterface],
-});
-
-/**
- * Define your own connection types here
- */
-var {connectionType: widgetConnection} =
-  connectionDefinitions({name: 'Widget', nodeType: widgetType});
 
 /**
  * This is the type that will be the root of our query,

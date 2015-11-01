@@ -46,5 +46,5 @@ export function getHidingSpot(id) {
 };
 
 export function getGame() { return game; };
-export function getHidingSpot() { return hidingSpots; };
+export function getHidingSpots() { return hidingSpots; };
 export function getTrunsRemaining() { return turnsRemaining };
